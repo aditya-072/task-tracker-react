@@ -62,7 +62,7 @@ const Task = ({ task, onEditTask, onDeleteTask, onToggleCompleted }) => {
           </div>
         </form>
       ) : (
-        <div className=" flex items-center justify-between p-4 px-3">
+        <div className=" flex items-center justify-between p-4 px-3 min-w-[500px] sm:min-w-[300px] w-full">
           <div className=" flex items-center space-x-3">
             <input
               type="checkbox"
@@ -72,11 +72,10 @@ const Task = ({ task, onEditTask, onDeleteTask, onToggleCompleted }) => {
             />
 
             <span
-              className={` ${
-                task.completed
+              className={` ${task.completed
                   ? "line-through text-gray-500 text-lg"
                   : "text-lg"
-              } `}
+                } `}
             >
               {task.title}
             </span>

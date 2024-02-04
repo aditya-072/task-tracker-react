@@ -3,6 +3,12 @@ import AddTaskForm from "./components/AddTaskForm";
 import TaskList from "./components/TaskList";
 import { MdDarkMode, MdSunny } from "react-icons/md";
 
+import { rem, Text } from "@mantine/core";
+import { useListState } from "@mantine/hooks";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { IconGripVertical } from "@tabler/icons-react";
+import Task from "./components/Task";
+
 function saveTasks(tasks) {
     console.log("saveTasks ran", tasks);
     localStorage.setItem("tasks", JSON.stringify(tasks));
@@ -64,6 +70,46 @@ function App() {
         setDarkTheme((prevTheme) => !prevTheme);
     };
 
+    const [state, handlers] = useListState([]);
+    useEffect(() => {
+        console.log('useEffect');
+        handlers.setState([]);
+        tasks.map((task) => {
+            handlers.append(task);
+        })
+    }, [tasks])
+    console.log(state);
+    if (state.length > 0) {
+        saveTasks(state);
+    }
+    const items = state.map((task, index) => (
+        <Draggable key={task.id} index={index} draggableId={task.id.toString()}>
+            {(provided, snapshot) => (
+                <div
+                    className="flex"
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                >
+                    <div className="flex" {...provided.dragHandleProps} >
+                        <IconGripVertical
+                            style={{ width: rem(18), height: rem(18) }}
+                            stroke={1.5}
+                        />
+                    </div>
+                    <div>
+                        <Task
+                            key={task.id}
+                            task={task}
+                            onEditTask={editTask}
+                            onDeleteTask={deleteTask}
+                            onToggleCompleted={toggleCompleted}
+                        />
+                    </div>
+                </div>
+            )}
+        </Draggable>
+    ));
+
     return (
         <div
             className={`hero ${darkTheme ? "bg-gray-900" : "bg-gray-100"
@@ -112,7 +158,27 @@ function App() {
                         <button onClick={clearTasks}>Clear all tasks</button>
                     </div>
 
-                    {tasks.length ? (
+                    <DragDropContext
+                        onDragEnd={({ destination, source }) =>
+                            handlers.reorder({
+                                from: source.index,
+                                to: destination?.index || 0,
+                            })
+                        }
+                    >
+                        <Droppable droppableId="dnd-list" direction="vertical">
+                            {(provided) => (
+                                <div {...provided.droppableProps} ref={provided.innerRef}>
+                                    <ul>
+                                        {items}
+                                    </ul>
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+
+                    {/* {tasks.length ? (
                         <TaskList
                             tasks={tasks}
                             onEditTask={editTask}
@@ -123,7 +189,7 @@ function App() {
                         <div className=" w-full h-[80%] flex items-center justify-center overflow-hidden">
                             <p className=" text-gray-500 text-center z-10">Empty task</p>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>
